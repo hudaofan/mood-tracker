@@ -18,14 +18,14 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 overflow-x-hidden">
       {/* 主内容区域 */}
-      <main className="pb-20">
+      <main className="pb-20 overflow-x-hidden">
         {children}
       </main>
 
       {/* 底部导航栏 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-purple-100 px-4 py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-purple-100 px-4 py-2 z-50">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {navItems.map((item) => {
             const Icon = item.icon

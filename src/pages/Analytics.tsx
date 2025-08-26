@@ -85,7 +85,7 @@ export default function Analytics() {
         // 简单的中文分词（实际项目中可以使用更专业的分词库）
         const text = record.diary_content
           .replace(/[，。！？；：]/g, ' ')
-          .replace(/[()（）\[\]【】]/g, ' ')
+          .replace(/[()（）[\]【】]/g, ' ')
           .split(/\s+/)
           .filter(word => word.length > 1)
         
@@ -114,8 +114,8 @@ export default function Analytics() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream-50 to-lavender-50 p-4 pb-20">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-cream-50 to-lavender-50 p-4 pb-20 overflow-x-hidden">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* 标题和时间范围选择器 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -151,7 +151,7 @@ export default function Analytics() {
             <TrendingUp className="w-6 h-6 text-lavender-500" />
             <h2 className="text-xl font-semibold text-mist-800">情绪强度趋势</h2>
           </div>
-          <div className="h-64">
+          <div className="h-64 w-full overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -190,7 +190,7 @@ export default function Analytics() {
               <PieChartIcon className="w-6 h-6 text-lavender-500" />
               <h2 className="text-xl font-semibold text-mist-800">情绪分布</h2>
             </div>
-            <div className="h-64">
+            <div className="h-64 w-full overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -243,7 +243,7 @@ export default function Analytics() {
               <Cloud className="w-6 h-6 text-lavender-500" />
               <h2 className="text-xl font-semibold text-mist-800">关键词</h2>
             </div>
-            <div className="h-64 flex flex-wrap items-center justify-center gap-2 overflow-hidden">
+            <div className="h-64 flex flex-wrap items-center justify-center gap-2 overflow-hidden p-2">
               {wordCloudData.map((word, index) => (
                 <span
                   key={index}
