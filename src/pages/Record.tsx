@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, Mic, Save } from 'lucide-react'
+import { Camera, Mic, Save, LogIn } from 'lucide-react'
 import { supabase, MOOD_TYPES, MoodRecord } from '@/lib/supabase'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
 
 type MoodType = keyof typeof MOOD_TYPES
 
@@ -10,9 +12,18 @@ export default function Record() {
   const [intensity, setIntensity] = useState(3)
   const [diaryContent, setDiaryContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const { user, isAuthenticated } = useAuthContext()
 
   const handleSave = async () => {
-    if (!selectedMood) return
+    if (!selectedMood) {
+      toast.error('请选择一个情绪')
+      return
+    }
+    
+    if (!isAuthenticated || !user) {
+      toast.error('请先登录后再保存记录')
+      return
+    }
     
     setIsLoading(true)
     try {
@@ -22,7 +33,7 @@ export default function Record() {
           mood_type: selectedMood,
           mood_intensity: intensity,
           diary_content: diaryContent || null,
-          user_id: 'temp-user-id' // 临时用户ID，后续集成认证
+          user_id: user.id // 使用真实用户ID
         })
       
       if (error) throw error
@@ -32,10 +43,10 @@ export default function Record() {
       setIntensity(3)
       setDiaryContent('')
       
-      alert('情绪记录保存成功！')
-    } catch (error) {
+      toast.success('情绪记录保存成功！')
+    } catch (error: any) {
       console.error('保存失败:', error)
-      alert('保存失败，请重试')
+      toast.error(error.message || '保存失败，请重试')
     } finally {
       setIsLoading(false)
     }

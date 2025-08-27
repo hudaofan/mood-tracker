@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { TrendingUp, PieChart as PieChartIcon, Cloud } from 'lucide-react'
 import { supabase, MOOD_TYPES, MoodRecord } from '@/lib/supabase'
+import { useAuthContext } from '@/contexts/AuthContext'
 
 type TimeRange = '7d' | '30d' | '90d'
 
@@ -10,16 +11,24 @@ export default function Analytics() {
   const [records, setRecords] = useState<MoodRecord[]>([])
   const [timeRange, setTimeRange] = useState<TimeRange>('30d')
   const [isLoading, setIsLoading] = useState(true)
+  const { user, isAuthenticated } = useAuthContext()
 
   useEffect(() => {
-    fetchRecords()
-  }, [])
+    if (isAuthenticated && user) {
+      fetchRecords()
+    } else {
+      setIsLoading(false)
+    }
+  }, [isAuthenticated, user])
 
   const fetchRecords = async () => {
+    if (!user) return
+    
     try {
       const { data, error } = await supabase
         .from('mood_records')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: true })
       
       if (error) throw error

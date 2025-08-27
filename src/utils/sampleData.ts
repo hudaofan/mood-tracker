@@ -97,6 +97,14 @@ const sampleMoodRecords = [
 // 插入示例数据的函数
 export const insertSampleData = async () => {
   try {
+    // 获取当前用户
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    
+    if (userError || !user) {
+      console.error('获取用户信息失败:', userError)
+      return false
+    }
+    
     // 检查是否已经有数据
     const { data: existingData, error: checkError } = await supabase
       .from('mood_records')
@@ -114,10 +122,16 @@ export const insertSampleData = async () => {
       return true
     }
     
+    // 为示例数据添加用户ID
+    const sampleDataWithUserId = sampleMoodRecords.map(record => ({
+      ...record,
+      user_id: user.id
+    }))
+    
     // 插入示例数据
     const { error } = await supabase
       .from('mood_records')
-      .insert(sampleMoodRecords)
+      .insert(sampleDataWithUserId)
     
     if (error) {
       console.error('插入示例数据失败:', error)

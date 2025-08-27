@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, List, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase, MOOD_TYPES, MoodRecord } from '@/lib/supabase'
+import { useAuthContext } from '@/contexts/AuthContext'
 
 type ViewMode = 'calendar' | 'list'
 
@@ -10,16 +11,24 @@ export default function History() {
   const [records, setRecords] = useState<MoodRecord[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [isLoading, setIsLoading] = useState(true)
+  const { user, isAuthenticated } = useAuthContext()
 
   useEffect(() => {
-    fetchRecords()
-  }, [])
+    if (isAuthenticated && user) {
+      fetchRecords()
+    } else {
+      setIsLoading(false)
+    }
+  }, [isAuthenticated, user])
 
   const fetchRecords = async () => {
+    if (!user) return
+    
     try {
       const { data, error } = await supabase
         .from('mood_records')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
       if (error) throw error

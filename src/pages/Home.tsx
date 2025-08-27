@@ -3,18 +3,25 @@ import { motion } from 'framer-motion'
 import { Plus, Calendar, TrendingUp, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase, MOOD_TYPES, MoodRecord } from '@/lib/supabase'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
 
 export default function Home() {
   const [todayRecords, setTodayRecords] = useState<MoodRecord[]>([])
   const [recentRecord, setRecentRecord] = useState<MoodRecord | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [greeting, setGreeting] = useState('')
+  const { user, isAuthenticated } = useAuthContext()
 
   useEffect(() => {
     setGreeting(getGreeting())
-    fetchTodayRecords()
-    fetchRecentRecord()
-  }, [])
+    if (isAuthenticated && user) {
+      fetchTodayRecords()
+      fetchRecentRecord()
+    } else {
+      setIsLoading(false)
+    }
+  }, [isAuthenticated, user])
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -25,11 +32,14 @@ export default function Home() {
   }
 
   const fetchTodayRecords = async () => {
+    if (!user) return
+    
     try {
       const today = new Date().toISOString().split('T')[0]
       const { data, error } = await supabase
         .from('mood_records')
         .select('*')
+        .eq('user_id', user.id)
         .gte('created_at', `${today}T00:00:00`)
         .lt('created_at', `${today}T23:59:59`)
         .order('created_at', { ascending: false })
@@ -42,10 +52,13 @@ export default function Home() {
   }
 
   const fetchRecentRecord = async () => {
+    if (!user) return
+    
     try {
       const { data, error } = await supabase
         .from('mood_records')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
       
@@ -59,6 +72,11 @@ export default function Home() {
   }
 
   const quickMoodRecord = async (moodType: string, intensity: number) => {
+    if (!isAuthenticated || !user) {
+      toast.error('请先登录后再记录心情')
+      return
+    }
+    
     try {
       const { error } = await supabase
         .from('mood_records')
@@ -66,16 +84,20 @@ export default function Home() {
           mood_type: moodType,
           mood_intensity: intensity,
           diary_content: '',
+          user_id: user.id,
           created_at: new Date().toISOString()
         })
       
       if (error) throw error
       
+      toast.success('心情记录成功！')
+      
       // 刷新今日记录
       await fetchTodayRecords()
       await fetchRecentRecord()
-    } catch (error) {
+    } catch (error: any) {
       console.error('快速记录失败:', error)
+      toast.error(error.message || '记录失败，请重试')
     }
   }
 
@@ -104,6 +126,75 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-gray-500">加载中...</div>
+      </div>
+    )
+  }
+
+  // 未登录用户显示欢迎界面
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen p-4 pt-8 pb-20">
+        <div className="max-w-md mx-auto space-y-6">
+          {/* 欢迎标题 */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <h1 className="text-4xl font-bold text-gray-800 mb-4">心情日记</h1>
+            <p className="text-gray-600 text-lg">记录每一刻的心情变化</p>
+          </motion.div>
+
+          {/* 功能介绍 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
+                  <span className="text-2xl">😊</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">情绪记录</h3>
+                  <p className="text-sm text-gray-600">快速记录当下的心情状态</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">数据分析</h3>
+                  <p className="text-sm text-gray-600">了解你的情绪变化趋势</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+                  <span className="text-2xl">📝</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">日记功能</h3>
+                  <p className="text-sm text-gray-600">记录详细的心情日记</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* 登录提示 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-3xl p-6 text-white text-center"
+          >
+            <h3 className="text-xl font-semibold mb-2">开始你的心情之旅</h3>
+            <p className="text-purple-100 mb-4">登录后即可开始记录和分析你的心情变化</p>
+            <p className="text-sm text-purple-200">点击右上角登录按钮开始使用</p>
+          </motion.div>
+        </div>
       </div>
     )
   }
