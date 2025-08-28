@@ -46,7 +46,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onC
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded-2xl shadow-lg">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">创建账户</h2>
-        <p className="text-gray-600">开始您的心情记录之旅</p>
+        <p className="text-gray-600">开始您的心情小记之旅</p>
       </div>
 
       <form onSubmit={handleRegister} className="space-y-4">

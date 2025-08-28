@@ -29,11 +29,11 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex items-center gap-3">
             <img 
               src="/logo.svg" 
-              alt="心情日记" 
+              alt="心情小记" 
               className="w-8 h-8"
             />
             <div>
-              <h1 className="text-lg font-semibold text-gray-800">心情日记</h1>
+              <h1 className="text-lg font-semibold text-gray-800">心情小记</h1>
               <p className="text-xs text-gray-500">记录每一天的美好</p>
             </div>
           </div>
@@ -68,7 +68,7 @@ export default function Layout({ children }: LayoutProps) {
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg text-sm hover:from-pink-600 hover:to-purple-700 hover:shadow-lg transition-all duration-300"
               >
                 登录
               </button>
