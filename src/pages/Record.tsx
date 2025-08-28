@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, Mic, Save, LogIn } from 'lucide-react'
-import { supabase, MOOD_TYPES, MoodRecord } from '@/lib/supabase'
+import { Camera, Mic, Save } from 'lucide-react'
+import { supabase, MOOD_TYPES } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
@@ -27,7 +27,7 @@ export default function Record() {
     
     setIsLoading(true)
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('mood_records')
         .insert({
           mood_type: selectedMood,
@@ -44,9 +44,9 @@ export default function Record() {
       setDiaryContent('')
       
       toast.success('情绪记录保存成功！')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('保存失败:', error)
-      toast.error(error.message || '保存失败，请重试')
+      toast.error(error instanceof Error ? error.message : '保存失败，请重试')
     } finally {
       setIsLoading(false)
     }

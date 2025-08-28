@@ -95,9 +95,9 @@ export default function Home() {
       // 刷新今日记录
       await fetchTodayRecords()
       await fetchRecentRecord()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('快速记录失败:', error)
-      toast.error(error.message || '记录失败，请重试')
+      toast.error(error instanceof Error ? error.message : '记录失败，请重试')
     }
   }
 

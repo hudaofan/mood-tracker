@@ -20,7 +20,7 @@ export const useAuth = () => {
   // 使用useRef避免useEffect无限循环
   const isInitialLoadRef = useRef(true)
   const hasShownLoginToastRef = useRef(false)
-  const authListenerRef = useRef<any>(null)
+  const authListenerRef = useRef<{ unsubscribe: () => void } | null>(null)
 
   useEffect(() => {
     // 获取初始会话
@@ -146,9 +146,9 @@ export const useAuth = () => {
       }
 
       return { data, error: null }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('注册失败:', error)
-      const errorMessage = error.message || '注册失败'
+      const errorMessage = error instanceof Error ? error.message : '注册失败'
       toast.error(`注册失败: ${errorMessage}`)
       return { data: null, error }
     } finally {
@@ -177,17 +177,17 @@ export const useAuth = () => {
       }
 
       return { data, error: null }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('登录失败:', error)
-      let errorMessage = error.message || '登录失败'
-      
+      let errorMessage = error instanceof Error ? error.message : '登录失败'
       // 提供更友好的错误信息
-      if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = '邮箱或密码错误，请检查后重试'
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = '请先确认邮箱后再登录'
+      if (error instanceof Error) {
+        if (error.message?.includes('Invalid login credentials')) {
+          errorMessage = '邮箱或密码错误，请检查后重试'
+        } else if (error.message?.includes('Email not confirmed')) {
+          errorMessage = '请先确认邮箱后再登录'
+        }
       }
-      
       toast.error(errorMessage)
       return { data: null, error }
     } finally {
@@ -218,9 +218,9 @@ export const useAuth = () => {
 
       console.log('GitHub登录请求成功，等待OAuth回调...')
       return { data, error: null }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('GitHub登录失败:', error)
-      toast.error(error.message || 'GitHub登录失败')
+      toast.error(error instanceof Error ? error.message : 'GitHub登录失败')
       return { data: null, error }
     } finally {
       setAuthState(prev => ({ ...prev, loading: false }))
@@ -235,9 +235,9 @@ export const useAuth = () => {
       hasShownLoginToastRef.current = false
       const { error } = await supabase.auth.signOut()
       if (error) throw error
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('登出失败:', error)
-      toast.error(error.message || '登出失败')
+      toast.error(error instanceof Error ? error.message : '登出失败')
     } finally {
       setAuthState(prev => ({ ...prev, loading: false }))
     }
@@ -254,9 +254,9 @@ export const useAuth = () => {
 
       toast.success('密码重置邮件已发送，请检查邮箱')
       return { data, error: null }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('密码重置失败:', error)
-      toast.error(error.message || '密码重置失败')
+      toast.error(error instanceof Error ? error.message : '密码重置失败')
       return { data: null, error }
     }
   }
